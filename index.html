@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Кибербезопасность — не паранойя, а гигиена</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Golos+Text:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0c0f;
+      --surface: #111418;
+      --border: #1e2530;
+      --accent: #00e5ff;
+      --accent2: #ff3c5c;
+      --text: #d4dce8;
+      --muted: #5a6a7a;
+      --heading: #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Golos Text', sans-serif;
+      font-size: 17px;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+
+    /* ── GRID LINES ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 120px 24px 100px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .tag {
+      display: inline-block;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 4px 12px;
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.1s forwards;
+    }
+
+    h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--heading);
+      opacity: 0;
+      animation: fadeUp 0.7s 0.3s forwards;
+    }
+
+    h1 span {
+      color: var(--accent);
+      position: relative;
+      display: inline-block;
+    }
+
+    h1 span::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: lineIn 0.6s 1s forwards;
+    }
+
+    .subtitle {
+      margin-top: 24px;
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.5s forwards;
+    }
+
+    .meta {
+      margin-top: 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.7s forwards;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+      flex-shrink: 0;
+    }
+
+    .meta-text {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .meta-text strong { color: var(--text); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .divider hr {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      position: relative;
+      z-index: 10;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px 120px;
+    }
+
+    /* ── LEAD ── */
+    .lead {
+      margin: 60px 0 48px;
+      padding: 28px 32px;
+      border-left: 3px solid var(--accent);
+      background: rgba(0,229,255,0.04);
+      font-size: 1.15rem;
+      color: var(--heading);
+      font-style: italic;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      margin: 56px 0;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .section.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    h2 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    h2 .num {
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+    }
+
+    p { margin-bottom: 18px; }
+    p:last-child { margin-bottom: 0; }
+
+    /* ── STAT CARDS ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 48px 0;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s;
+    }
+
+    .stat-card.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--accent);
+    }
+
+    .stat-card:nth-child(2)::before { background: var(--accent2); }
+    .stat-card:nth-child(3)::before { background: #a78bfa; }
+
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--heading);
+      line-height: 1;
+    }
+
+    .stat-label {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── HIGHLIGHT BOX ── */
+    .highlight {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 28px 32px;
+      margin: 32px 0;
+      position: relative;
+    }
+
+    .highlight::before {
+      content: '!';
+      position: absolute;
+      top: -12px; left: 24px;
+      background: var(--accent2);
+      color: #000;
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 2px 10px;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── CHECKLIST ── */
+    .checklist {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .checklist li {
+      padding: 10px 0 10px 36px;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .checklist li:last-child { border-bottom: none; }
+
+    .checklist li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ── TERMINAL BLOCK ── */
+    .terminal {
+      background: #060809;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin: 28px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #7afcb1;
+      line-height: 2;
+      position: relative;
+    }
+
+    .terminal::before {
+      content: '● ● ●';
+      display: block;
+      color: var(--muted);
+      letter-spacing: 4px;
+      font-size: 9px;
+      margin-bottom: 14px;
+      opacity: 0.5;
+    }
+
+    .terminal .prompt { color: var(--accent); }
+    .terminal .comment { color: var(--muted); font-style: italic; }
+    .terminal .warn { color: var(--accent2); }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 10;
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .footer-brand span { color: var(--accent); }
+
+    .footer-note { font-size: 12px; color: var(--muted); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @keyframes lineIn {
+      to { transform: scaleX(1); }
+    }
+
+    /* ── GLOW BLOB ── */
+    .blob {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      top: -200px;
+      right: -200px;
+      z-index: 1;
+      animation: blobDrift 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes blobDrift {
+      from { transform: translate(0, 0); }
+      to   { transform: translate(-60px, 80px); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      header { padding: 80px 20px 60px; }
+      .lead { padding: 20px 24px; }
+      .highlight { padding: 20px 24px; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blob"></div>
+
+  <header>
+    <div class="tag">Кибербезопасность · 2025</div>
+    <h1>Это не паранойя —<br>это <span>цифровая гигиена</span></h1>
+    <p class="subtitle">Почему защита в сети стала такой же необходимостью, как замок на двери.</p>
+    <div class="meta">
+      <div class="avatar">Ω</div>
+      <div class="meta-text">
+        <strong>Omega Security Blog</strong><br>
+        Время чтения: ~5 минут
+      </div>
+    </div>
+  </header>
+
+  <div class="divider"><hr /></div>
+
+  <main class="content">
+
+    <blockquote class="lead">
+      Мошенники в интернете существуют так же, как карманники в толпе. Разница лишь в том, что в интернете толпа намного больше — и карманников тоже.
+    </blockquote>
+
+    <!-- SECTION 1 -->
+    <div class="section">
+      <h2><span class="num">01 —</span> Это уже не про хакеров в кино</h2>
+      <p>
+        Когда слышишь слово «взлом», в голове всплывает образ из фильма: человек в тёмной комнате, быстро печатает код, экраны мигают. На самом деле большинство интернет-мошенничеств выглядят куда прозаичнее.
+      </p>
+      <p>
+        Вам приходит письмо якобы от банка: «Ваш аккаунт заблокирован, войдите по ссылке». Или сообщение в мессенджере от «друга» с просьбой одолжить деньги. Или всплывающее окно: «Ваш компьютер заражён, позвоните нам». Всё это — обман, и он работает не потому что люди глупые, а потому что мошенники умеют давить на нужные кнопки: страх, срочность, доверие.
+      </p>
+
+      <div class="highlight">
+        Большинство онлайн-мошенничеств — это не технические взломы. Это психологические манипуляции. Главная «уязвимость» — доверие человека, а не дыра в программе.
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section">
+      <h2><span class="num">02 —</span> Почему «меня не взломают» — плохая защита</h2>
+      <p>
+        Многие думают: «Я обычный человек, кому я нужен?» Но мошенники в интернете не выбирают жертву вручную. Они рассылают тысячи одинаковых писем и ждут, кто кликнет. Это как рыбалка сетью — им всё равно, какая именно рыба попадётся.
+      </p>
+      <p>
+        Цель — не обязательно ваши секреты. Часто достаточно просто получить доступ к вашему аккаунту, чтобы рассылать спам вашим контактам. Или украсть данные карты. Или зашифровать ваши фотографии и потребовать выкуп.
+      </p>
+
+      <div class="highlight">
+        Ваши данные интересны мошенникам не потому, что вы важная персона. А потому что они нужны им как инструмент — для заработка или для следующей атаки на других.
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section">
+      <h2><span class="num">03 —</span> Пять простых вещей, которые реально помогают</h2>
+      <p>Хорошая новость: базовая защита — это несложно. Вот что работает на практике.</p>
+
+      <ul class="checklist">
+        <li><strong>Разные пароли на разных сайтах.</strong> Если один сайт взломают и утащат ваш пароль — мошенники сразу попробуют его везде. Уникальный пароль на каждом сервисе обрывает эту цепочку.</li>
+        <li><strong>Двойная проверка при входе.</strong> Когда сайт просит ввести код из смс или приложения — это не лишнее неудобство. Это замок, к которому нужен второй ключ, которого у мошенника нет.</li>
+        <li><strong>Не кликать на подозрительные ссылки.</strong> Пришло срочное письмо от банка? Не переходите по ссылке в письме — лучше откройте приложение банка вручную. Настоящий банк не обидится.</li>
+        <li><strong>Обновлять приложения и систему.</strong> Обновления часто закрывают дыры, через которые могут пролезть вирусы. Откладывать их — значит оставлять дверь приоткрытой.</li>
+        <li><strong>Делать резервные копии важного.</strong> Фотографии, документы — держите копию на внешнем диске или в облаке. Если телефон потеряется или сломается, вы не потеряете всё.</li>
+      </ul>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section">
+      <h2><span class="num">04 —</span> Как не попасться на удочку</h2>
+      <p>
+        Мошенники умеют создавать давление. «Срочно!», «Ваш аккаунт будет удалён через 24 часа!», «Вы выиграли приз!» — всё это сигналы, что вас пытаются заставить действовать быстро, не думая.
+      </p>
+      <p>
+        Простое правило: если что-то вызвало панику или радость — сделайте паузу. Позвоните знакомому, перепроверьте информацию на официальном сайте. Мошенник не хочет, чтобы вы думали — он хочет, чтобы вы кликнули прямо сейчас.
+      </p>
+
+      <div class="highlight">
+        Если вам пишет «друг» с незнакомого номера и просит перевести деньги — позвоните этому другу напрямую. Один звонок спасает от большинства подобных схем.
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section">
+      <h2><span class="num">05 —</span> Это привычка, а не разовое дело</h2>
+      <p>
+        Кибербезопасность — это не то, что настраивается один раз и забывается. Это скорее как гигиена: нельзя почистить зубы один раз в жизни и считать, что проблема решена.
+      </p>
+      <p>
+        Но и в панику впадать не нужно. Достаточно нескольких осознанных привычек — и ваш уровень защиты становится выше, чем у большинства людей вокруг. Мошенники, как и все остальные, идут туда, где проще. Просто не будьте лёгкой целью.
+      </p>
+      <p>
+        Интернет — удивительное место. Не стоит из-за угроз отказываться от всего хорошего, что он даёт. Просто стоит знать, на что обращать внимание.
+      </p>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="footer-brand"><span>Ω</span> Omega Security Blog</div>
+    <div class="footer-note">Написано в 2025 · Tashkent, Uzbekistan</div>
+  </footer>
+
+  <script>
+    // Scroll-triggered reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.section, .stat-card').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
